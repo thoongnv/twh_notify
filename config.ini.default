@@ -1,0 +1,10 @@
+[erppeek]
+server = Odoo server
+database = ***
+username = ***
+password = ***
+
+[mailgun]
+domain = ***
+api_key = ***
+from_email = ***
