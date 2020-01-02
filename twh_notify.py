@@ -10,6 +10,8 @@ from datetime import datetime
 import erppeek
 import requests
 
+CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+
 # setup logging
 logging.basicConfig(
     format='twh_notify %(asctime)s %(levelname)s: %(message)s',
@@ -19,8 +21,7 @@ _logger.setLevel(logging.DEBUG)
 
 # load config
 config = configparser.ConfigParser()
-config.read('{0}/config.ini'.format(
-    os.path.dirname(os.path.realpath(__file__))))
+config.read('{0}/config.ini'.format(CURRENT_DIR))
 
 DEFAULT_DATE_FORMAT = '%Y-%m-%d'
 DEFAULT_WORKING_HOUR = 8.0
@@ -91,7 +92,7 @@ def main(check_date=None):
 
 
 def init_database_connection():
-    conn = sqlite3.connect('twh_notify.db')
+    conn = sqlite3.connect('{0}/twh_notify.db'.format(CURRENT_DIR))
     c = conn.cursor()
     # create tables if not exists
     c.executescript('''
@@ -130,7 +131,7 @@ def get_notify_users(conn):
 
 def import_default_data(conn):
     c = conn.cursor()
-    with open('./twh_notify_users.csv') as f:
+    with open('{0}/twh_notify_users.csv'.format(CURRENT_DIR)) as f:
         _logger.info('Importing default users ...')
         csv_reader = csv.reader(f, delimiter=',')
         headers = []
