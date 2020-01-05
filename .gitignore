@@ -1,4 +1,5 @@
 .editorconfig
 twh_notify_users.csv
+twh_notify.log
 twh_notify.db
 config.ini

@@ -5,6 +5,7 @@ import csv
 import logging
 import os
 import sqlite3
+import traceback
 from datetime import datetime
 
 import erppeek
@@ -73,8 +74,13 @@ def main(check_date=None):
         missing_hour = 0 if total_hour == DEFAULT_WORKING_HOUR else 1
         send_notify = 0
         if missing_hour:
-            sent = notify_user(
-                check_date, total_hour, email, user[3], user[4])
+            notify_email = user[3]
+            to_email = notify_email if notify_email else email
+            subject = "Missing working hours %s" % check_date
+            text = "Today you input %s hours, please recheck it!" % total_hour
+
+            _logger.info('Sending notification to %s ...' % (to_email))
+            sent = send_email(to_email, subject, text)
             send_notify = 1 if sent else 0
 
         c.execute('''
@@ -158,17 +164,15 @@ def get_working_hours(client, email, check_date):
     return working_hours
 
 
-def notify_user(check_date, total_hour, email, notify_email=None, phone=None):
-    to_email = notify_email if notify_email else email
-    _logger.info('Sending notification to %s ...' % (to_email))
+def send_email(to_email, subject, text):
     response = requests.post(
         "%s/messages" % config['mailgun']['domain'],
         auth=("api", config['mailgun']['api_key']),
         data={
             "from": config['mailgun']['from_email'],
             "to": to_email,
-            "subject": "Missing working hours %s" % check_date,
-            "text": "Today you input %s hours, please recheck it!" % total_hour
+            "subject": subject,
+            "text": text,
         }
     )
     if response and response.status_code == 200:
@@ -177,4 +181,8 @@ def notify_user(check_date, total_hour, email, notify_email=None, phone=None):
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        text = traceback.format_exc()
+        send_email('thoongnv@gmail.com', 'TWH exceptions', text)
