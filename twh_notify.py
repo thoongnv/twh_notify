@@ -60,10 +60,10 @@ def main(check_date=None):
         c.execute('''
             SELECT *
             FROM crons
-            WHERE user_id = %s AND check_date = '%s'
+            WHERE user_id = ? AND check_date = ?
             ORDER BY id DESC
             LIMIT 1
-        ''' % (user_id, check_date))
+        ''', (user_id, check_date))
         cron = c.fetchone()
         if cron and not cron[4]:
             _logger.info('Fully input, can skip now!')
@@ -90,8 +90,8 @@ def main(check_date=None):
                 total_hour,
                 missing_hour,
                 send_notify
-            ) VALUES ({0}, '{1}', {2}, {3}, {4})
-        '''.format(user_id, check_date, total_hour, missing_hour, send_notify))
+            ) VALUES (?, ?, ?, ?, ?)
+        ''', (user_id, check_date, total_hour, missing_hour, send_notify))
         conn.commit()
 
     return True
@@ -147,8 +147,8 @@ def import_default_data(conn):
                 continue
 
             c.execute('''
-                INSERT INTO users ({0}) VALUES {1}
-            '''.format(', '.join(headers), str(tuple(row))))
+                INSERT INTO users ({}) VALUES (?, ?, ?, ?)
+            '''.format(', '.join(headers)), tuple(row))
             conn.commit()
     return True
 
